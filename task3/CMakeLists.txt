@@ -3,5 +3,5 @@ project(task3)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(SOURCE_FILES main.cpp rational.h rational.cpp)
+set(SOURCE_FILES rational.h rational.cpp)
 add_executable(task3 ${SOURCE_FILES})
