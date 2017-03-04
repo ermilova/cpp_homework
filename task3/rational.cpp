@@ -21,18 +21,18 @@ int rational::getDenom() const {
     return denom;
 }
 
-const rational operator+(const rational &left, const rational &right) {
-    return rational(left.denom * right.num + right.denom * left.num, left.denom * right.denom);
+rational rational::operator+(rational const &right) const {
+    return rational(denom * right.num + right.denom * num, denom * right.denom);
 }
 
-const rational operator*(const rational &left, const rational &right) {
-    return rational(left.num * right.num, left.denom * right.denom);
+rational rational::operator-(rational const &right) const {
+    return rational(right.denom * num - denom * right.num, denom * right.denom);
 }
 
-const rational operator-(const rational &left, const rational &right) {
-    return rational(right.denom * left.num - left.denom * right.num, left.denom * right.denom);
+rational rational::operator*(rational const &right) const {
+    return rational(num * right.num, denom * right.denom);
 }
 
-const rational operator/(const rational &left, const rational &right) {
-    return rational(left.num * right.denom, left.denom * right.num);
+rational rational::operator/(rational const &right) const {
+    return rational(num * right.denom, denom * right.num);
 }

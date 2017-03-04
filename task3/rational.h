@@ -9,10 +9,10 @@ struct rational {
     rational(int, int);
     int getNum() const;
     int getDenom() const;
-    friend const rational operator+(const rational& left, const rational& right);
-    friend const rational operator*(const rational& left, const rational& right);
-    friend const rational operator-(const rational& left, const rational& right);
-    friend const rational operator/(const rational& left, const rational& right);
+    rational operator +(rational const&) const;
+    rational operator -(rational const&) const;
+    rational operator *(rational const&) const;
+    rational operator /(rational const&) const;
 private:
     int num, denom;
 };
