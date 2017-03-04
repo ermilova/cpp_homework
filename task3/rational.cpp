@@ -10,7 +10,7 @@ rational::rational(int val) : num(val), denom(1) {}
 rational::rational(int val1, int val2) {
     int gcd = std::__gcd(val1, val2);
     num = val1 / gcd;
-    num = val2 / gcd;
+    denom = val2 / gcd;
 }
 
 int rational::getNum() const {
