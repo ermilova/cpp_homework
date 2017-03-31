@@ -19,6 +19,10 @@ int check_name(char *a);
 
 char *lower_case(char *);
 
+void read_subscriber(FILE *file, char *file_name, int id);
+
+int load_from_file(char *file_name);
+
 size_t size;
 int max_id;
 subscriber *records;
