@@ -4,122 +4,116 @@
 #include <ctype.h>
 
 
-struct subscriber {
+typedef struct subscriber {
     int id;
-    bool deleted;
+    int deleted;
     char *name;
     char *number;
-};
+} subscriber;
 
 char *get_str(FILE *file);
 
 char *normalize_number(char *number);
 
-bool check_name(char *a);
+int check_name(char *a);
 
 char *lower_case(char *);
 
-struct phone_book {
-    void create() {
-        size = 0;
-        max_id = 0;
-        records = (struct subscriber *) malloc(sizeof(struct subscriber) * 0);
-    }
+void read_subscriber(FILE *file, char *file_name, int id);
 
-    void add(int id, char *name, char *number) {
-        records = (subscriber *) realloc(records, (size + 1) * sizeof(subscriber));
-        records[size].id = id;
-        records[size].name = name;
-        records[size].number = number;
-        size++;
-    }
+size_t size;
+int max_id;
+subscriber *records;
 
-    int load_from_file(char *file_name) {
-        FILE *file;
-        file = fopen(file_name, "r+");
-        if (file == NULL) {
-            return 1;
+
+void add(int id, char *name, char *number) {
+    records = (subscriber *) realloc(records, (size + 1) * sizeof(subscriber));
+    records[size].id = id;
+    records[size].name = name;
+    records[size].number = number;
+    size++;
+}
+
+int load_from_file(char *file_name) {
+    FILE *file;
+    file = fopen(file_name, "r+");
+    if (file == NULL) {
+        return 1;
+    }
+    rewind(file);
+    int cur_id = 0;
+    while (fscanf(file, "%d", &cur_id) != EOF) {
+        if (cur_id > max_id) {
+            max_id = cur_id;
         }
-        rewind(file);
-        int cur_id = 0;
-        while (fscanf(file, "%d", &cur_id) != EOF) {
-            if (cur_id > max_id) {
-                max_id = cur_id;
-            }
-            read_subscriber(file, file_name, cur_id);
+        read_subscriber(file, file_name, cur_id);
+    }
+
+    fclose(file);
+    return 0;
+}
+
+void rewrite(char *file_name) {
+    FILE *file = fopen(file_name, "w+");
+    int i = 0;
+    for (i = 0; i < size; i++)
+        if (!records[i].deleted) {
+            fprintf(file, "%d %s %s\n", records[i].id, records[i].name, records[i].number);
         }
+    fclose(file);
+}
 
-        fclose(file);
-        return 0;
+void read_subscriber(FILE *file, char *file_name, int id) {
+    char *name = get_str(file);
+    char *number = get_str(file);
+
+    if (name != NULL && check_name(name) && number != NULL && normalize_number(number) != "") {
+        add(id, name, number);
+        rewrite(file_name);
+    } else {
+        printf("ERROR! Can't load subscriber%d\n", id);
+        free(name);
+        free(number);
     }
+}
 
-    void rewrite(char *file_name) {
-        FILE *file = fopen(file_name, "w+");
-        int i = 0;
-        for (i = 0; i < size; i++)
-            if (!records[i].deleted) {
-                fprintf(file, "%d %s %s\n", records[i].id, records[i].name, records[i].number);
-            }
-        fclose(file);
-    }
+void get_by_name(char *name) {
+    name = lower_case(name);
 
-    void read_subscriber(FILE *file, char *file_name, int id) {
-        char *name = get_str(file);
-        char *number = get_str(file);
-
-        if (name != NULL && check_name(name) && number != NULL && normalize_number(number) != "") {
-            add(id, name, number);
-            rewrite(file_name);
-        } else {
-            printf("ERROR! Can't load subscriber%d\n", id);
-            free(name);
-            free(number);
+    for (int i = 0; i < size; ++i) {
+        if (records[i].deleted) {
+            continue;
         }
-    }
-
-    void get_by_name(char *name) {
-        name = lower_case(name);
-
-        for (int i = 0; i < size; ++i) {
-            if (records[i].deleted) {
-                continue;
-            }
-            char *curName = records[i].name;
-            curName = lower_case(curName);
-            if (strstr(curName, name) != NULL) {
-                printf("%d %s %s \n", records[i].id, records[i].name, records[i].number);
-            }
-        }
-        return;
-    }
-
-    void get_by_number(char *number) {
-        number = normalize_number(number);
-        for (int i = 0; i < size; ++i) {
-            if (records[i].deleted) {
-                continue;
-            }
-            char *curNum = records[i].number;
-            if (strcmp(curNum, number) == 0) {
-                printf("%d %s %s \n", records[i].id, records[i].name, records[i].number);
-            }
+        char *curName = records[i].name;
+        curName = lower_case(curName);
+        if (strstr(curName, name) != NULL) {
+            printf("%d %s %s \n", records[i].id, records[i].name, records[i].number);
         }
     }
+    return;
+}
 
-    int get_by_id(int id) {
-        for (int i = 0; i < size; ++i) {
-            if (records[i].id == id) {
-                return i;
-            }
+void get_by_number(char *number) {
+    number = normalize_number(number);
+    for (int i = 0; i < size; ++i) {
+        if (records[i].deleted) {
+            continue;
         }
-        return -1;
+        char *curNum = records[i].number;
+        if (strcmp(curNum, number) == 0) {
+            printf("%d %s %s \n", records[i].id, records[i].name, records[i].number);
+        }
     }
+}
 
-    size_t size;
-    int max_id;
-    subscriber *records;
-};
-
+int get_by_id(int id) {
+    for (int i = 0; i < size; ++i) {
+        if (records[i].id == id) {
+            return i;
+        }
+    }
+    return -1;
+}
 char *lower_case(char *str) {
     size_t len = strlen(str);
     for (int i = 0; i < len; ++i) {
@@ -144,34 +138,34 @@ char *normalize_number(char *number) {
     return number;
 }
 
-bool check_name(char *name) {
+int check_name(char *name) {
     if (strcmp(name, "") == 0) {
-        return false;
+        return 0;
     }
 
     int i = 0;
     while (name[i] != '\0') {
         if (!isalpha(name[i++])) {
-            return false;
+            return 0;
         }
     }
-    return true;
+    return 1;
 }
 
-bool check_phone(char *phone) {
+int check_phone(char *phone) {
     if (strcmp(phone, "") == 0) {
-        return false;
+        return 0;
     }
 
     int i = 0;
     while (phone[i] != '\0') {
         if (!isdigit(phone[i]) && phone[i] != '-' && phone[i] != '+'
             && phone[i] != '(' && phone[i] != ')') {
-            return false;
+            return 0;
         }
         i++;
     }
-    return true;
+    return 1;
 }
 
 char *get_str(FILE *file) {
@@ -195,52 +189,52 @@ char *get_str(FILE *file) {
     return str;
 }
 
-void find(phone_book &book) {
+void find() {
     char *val = get_str(stdin);
     if (isalpha(val[0]) && check_name(val)) {
-        book.get_by_name(val);
+        get_by_name(val);
     } else if (check_phone(val)) {
-        book.get_by_number(val);
+        get_by_number(val);
     } else {
         printf("ERROR! Incorrect name or number \n");
     }
 }
 
-void create(phone_book &book) {
+void create() {
     char *name = get_str(stdin);
     char *number = get_str(stdin);
     if (check_name(name) && check_phone(number)) {
-        book.max_id++;
-        book.add(book.max_id, name, number);
+        max_id++;
+        add(max_id, name, number);
     } else {
         printf("ERROR! Incorrect name or number \n");
     }
 }
 
-void erase(phone_book &book, int id) {
-    id = book.get_by_id(id);
+void erase(int id) {
+    id = get_by_id(id);
     if (id == -1) {
         printf("ERROR! No such id\n");
     } else {
-        book.records[id].deleted = true;
+        records[id].deleted = 1;
     }
 }
 
-void change(phone_book &book, int id) {
+void change(int id) {
     char *type = get_str(stdin);
     char *val = get_str(stdin);
-    id = book.get_by_id(id);
+    id = get_by_id(id);
     if (id == -1) {
         printf("ERROR! No such id\n");
     } else if (strcmp(type, "name") == 0) {
         if (check_name(val))
-            book.records[id].name = val;
+            records[id].name = val;
         else {
             printf("ERROR! Incorrect name\n");
         }
     } else {
         if (check_phone(val))
-            book.records[id].number = normalize_number(val);
+            records[id].number = normalize_number(val);
         else {
             printf("ERROR! Incorrect phone number\n");
         }
@@ -249,32 +243,37 @@ void change(phone_book &book, int id) {
 
 int main(int argc, char *argv[]) {
 
-    phone_book book;
-    book.create();
     char *file_name = argv[1];
+    if (file_name == NULL) {
+        file_name = (char *) malloc(sizeof(char) * 10);
+        strcpy(file_name, "tbook.txt");
+    }
+    size = 0;
+    max_id = 0;
+    records = (struct subscriber *) malloc(sizeof(struct subscriber) * 0);
 
-    book.load_from_file(file_name);
+    load_from_file(file_name);
     char *command;
-    while (true) {
+    while (1) {
         command = get_str(stdin);
         if (!strcmp(command, "find")) {
-            find(book);
+            find();
         } else if (!strcmp(command, "create")) {
-            create(book);
-            book.rewrite(file_name);
+            create();
+            rewrite(file_name);
         } else if (!strcmp(command, "delete")) {
             int id;
             id = atoi(get_str(stdin));
-            erase(book, id);
-            book.rewrite(file_name);
+            erase(id);
+            rewrite(file_name);
         } else if (!strcmp(command, "change")) {
             int id;
             id = atoi(get_str(stdin));
-            change(book, id);
-            book.rewrite(file_name);
+            change(id);
+            rewrite(file_name);
         } else if (!strcmp(command, "exit")) {
-            book.rewrite(file_name);
-            free(book.records);
+            rewrite(file_name);
+            free(records);
             return 0;
         } else {
             printf("Error: No such command %s\n", command);
