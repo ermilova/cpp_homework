@@ -54,7 +54,7 @@ int load_from_file(char *file_name) {
 }
 
 void rewrite(char *file_name) {
-    FILE *file = fopen(file_name, "w+");
+    FILE *file = fopen(file_name, "w");
     int i = 0;
     for (i = 0; i < size; i++)
         if (!records[i].deleted) {
