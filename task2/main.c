@@ -55,6 +55,7 @@ int load_from_file(char *file_name) {
 
 void rewrite(char *file_name) {
     FILE *file = fopen(file_name, "w");
+    rewind(file);
     int i = 0;
     for (i = 0; i < size; i++)
         if (!records[i].deleted) {
@@ -205,7 +206,7 @@ void create() {
     char *number = get_str(stdin);
     if (check_name(name) && check_phone(number)) {
         max_id++;
-        add(max_id, name, number);
+        add(max_id, name, normalize_number(number));
     } else {
         printf("ERROR! Incorrect name or number \n");
     }
