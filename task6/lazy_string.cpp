@@ -18,7 +18,7 @@ lazy_string::lazy_string(const std::string &st) {
 }
 
 lazy_string::operator std::string() {
-    return std::__cxx11::string();
+    return substr(index, stlen);
 }
 
 size_t lazy_string::size() const {
