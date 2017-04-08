@@ -71,7 +71,7 @@ lazy_string lazy_string::substr(size_t begin, size_t len) {
 lazy_string::lazy_char &lazy_string::lazy_char::operator=(char c) {
     if (lsptr->ptr.use_count() >= 2) {
         lsptr->index = 0;
-        lsptr->ptr = std::make_shared<std::__cxx11::string>(lsptr->ptr->substr(lsptr->index, lsptr->stlen));
+        lsptr->ptr = std::make_shared<std::string>(lsptr->ptr->substr(lsptr->index, lsptr->stlen));
     }
     (*lsptr->ptr)[lsptr->index + index] = c;
     return *this;
